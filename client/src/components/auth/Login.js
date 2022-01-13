@@ -1,9 +1,11 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import React, {Component} from 'react';
+import {Link} from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 
-import { loginUser } from "../../actions/authActions";
+import Validator from 'validator';
+
+import {loginUser} from "../../actions/authActions";
 import logo from "../../assets/logo_dark.png";
 
 class Login extends Component {
@@ -12,47 +14,48 @@ class Login extends Component {
         this.state = {
             name: '',
             email: '',
-            errors: {}
+            errors: {},
         };
     }
 
     // if logged in and user navigates to login page, should redirect them to dashboard
     componentDidMount() {
+        this.setState({errors: ''})
+
         if (this.props.auth.isAuthenticated) {
             this.props.history.push("/posts");
         }
     }
 
     // set the new state of errors to perform form validation
-    static getDerivedStateFromProps(nextProps, prevState) {
+    /*static getDerivedStateFromProps(nextProps, prevState) {
         if (nextProps.errors !== prevState.errors) {
-            return {
-                errors: nextProps.errors,
-            };
+            return {errors: nextProps.errors};
+        } else {
+            return null;
         }
+    }*/
 
-        return null;
-    }
-
-    // forward a successful login to the main page
-    componentDidUpdate(prevProps, prevState, snapshot) {
+    componentDidUpdate(prevProps, prevState) {
+        // authentication
         if (this.props.auth.isAuthenticated) {
             this.props.history.push('/posts');
         }
     }
 
     // handle input onChange
-    onChange = (e) => {
-        this.setState({[e.target.id]: e.target.value})
+    onChange = (event) => {
+        this.setState({[event.target.id]: event.target.value})
+
     }
 
     // form submit
-    onSubmit = (e) => {
-        e.preventDefault();
+    onSubmit = (event) => {
+        event.preventDefault();
 
         const userData = {
             email: this.state.email,
-            password: this.state.password
+            password: this.state.password,
         };
 
         this.props.loginUser(userData);
@@ -60,7 +63,7 @@ class Login extends Component {
 
     // render the form and errors
     render() {
-        const { errors } = this.state;
+        const {errors} = this.state;
 
         return (
             <div className="container" style={{maxWidth: '370px'}}>
@@ -76,7 +79,7 @@ class Login extends Component {
 
                         <div>
                             <h4><b>Welcome</b> back</h4>
-                            <p>Don't have an account? <Link to="/login">Sign up</Link></p>
+                            <p>Don't have an account? <Link to="/register">Sign up</Link></p>
                         </div>
                     </div>
                 </div>
@@ -93,10 +96,10 @@ class Login extends Component {
                                     value={this.state.email}
                                     id="email"
                                     type="email"
-                                    className={`form-control ${errors.email || errors.emailnotfound ? 'is-invalid' : ''}`}
+                                    className={`form-control ${errors.email ? 'is-invalid' : ''}`}
                                 />
 
-                                {errors.email && <div className="invalid-feedback">{errors.email}{errors.emailnotfound}</div>}
+                                {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                             </div>
 
                             <div className="mb-3">
@@ -137,4 +140,4 @@ const mapStateToProps = state => ({
     errors: state.errors
 });
 
-export default connect(mapStateToProps, { loginUser })(Login);
+export default connect(mapStateToProps, {loginUser})(Login);

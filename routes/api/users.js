@@ -15,7 +15,7 @@ const User = require('../../models/User');
 // @desc    Register a new user
 // @access  Public
 router.post('/register', (req, res) => {
-    const { errors, isValid } = validateRegisterInput(req.body);
+    const {errors, isValid} = validateRegisterInput(req.body);
 
     // apply validation
     if (!isValid) {
@@ -23,25 +23,26 @@ router.post('/register', (req, res) => {
     }
 
     // check is a user exists already
-    User.findOne({ email: req.body.email }).then((user) => {
+    User.findOne({email: req.body.email}).then((user) => {
         if (user) {
-            return res.status(400).json({ email: 'Email already exists' });
-        }
-        else {
+            return res.status(400).json({
+                email: 'Email already exists'
+            });
+        } else {
             const newUser = new User({
                 name: req.body.name,
                 email: req.body.email,
                 password: req.body.password,
             });
 
-            bcrypt.genSalt(10, (err, salt) => {
-                bcrypt.hash(newUser.password, salt, (err, hash) => {
-                    if (err) throw err;
+            bcrypt.genSalt(10, (error, salt) => {
+                bcrypt.hash(newUser.password, salt, (error, hash) => {
+                    if (error) throw error;
                     newUser.password = hash;
                     newUser
                         .save()
                         .then(user => res.json(user))
-                        .catch(err => console.log(err));
+                        .catch(error => console.log(error));
                 });
             });
         }
@@ -52,7 +53,7 @@ router.post('/register', (req, res) => {
 // @desc    Login a user
 // @access  Public
 router.post('/login', (req, res) => {
-    const { errors, isValid } = validateLoginInput(req.body);
+    const {errors, isValid} = validateLoginInput(req.body);
 
     // apply validation
     if (!isValid) {
@@ -63,9 +64,12 @@ router.post('/login', (req, res) => {
     const password = req.body.password;
 
     // find a user by their email
-    User.findOne({ email }).then(user => {
+    User.findOne({email}).then(user => {
         if (!user) { // check if user exists
-            return res.status(404).json({ emailNotFound: "User not found" });
+            return res.status(400).json({
+                email: "Your email or password is incorrect",
+                password: 'Your credentials are incorrect',
+            });
         }
 
         // check password
@@ -79,16 +83,19 @@ router.post('/login', (req, res) => {
                 jwt.sign( // sign the jwt token
                     payload,
                     process.env.JWT_SECRET,
-                    { expiresIn: 31556926 }, // 1 year
-                    (err, token) => {
+                    {expiresIn: 31556926}, // 1 year
+                    (error, token) => {
                         res.json({
                             success: true,
-                            token: "Bearer " + token
+                            token: "Bearer " + token,
                         });
                     }
                 );
             } else {
-                return res.status(400).json({ passwordIncorrect: "Login failed" });
+                return res.status(400).json({
+                    email: "Your email or password is incorrect",
+                    password: 'Your credentials are incorrect',
+                });
             }
         });
     });
